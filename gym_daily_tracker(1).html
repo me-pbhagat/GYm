@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#111827">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Pranay Gym Tracker">
+<title>Pranay's Gym & Fat-Loss Tracker</title>
+<style>
+:root{--bg:#f5f7fb;--card:#fff;--text:#172033;--muted:#667085;--accent:#2563eb;--green:#16a34a;--border:#e5e7eb}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;background:var(--bg);color:var(--text)}
+header{background:#111827;color:#fff;padding:24px 18px}header h1{margin:0 0 5px;font-size:25px}header p{margin:0;color:#cbd5e1}
+.container{max-width:1100px;margin:auto;padding:18px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px;box-shadow:0 3px 12px #00000008}
+h2,h3{margin-top:0}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.stat{padding:14px;background:#f8fafc;border-radius:12px}.stat b{font-size:22px;display:block}.muted{color:var(--muted);font-size:13px}
+button{border:0;border-radius:10px;padding:10px 13px;background:var(--accent);color:white;cursor:pointer;font-weight:600}
+button.secondary{background:#eef2ff;color:#1e40af}button.danger{background:#fee2e2;color:#991b1b}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+label{font-size:14px;font-weight:600;display:block;margin:10px 0 6px}
+input,select,textarea{width:100%;padding:10px;-webkit-appearance:none;appearance:none;border:1px solid #d1d5db;border-radius:9px;background:white;font:inherit}
+.check{display:flex;align-items:center;gap:10px;padding:10px;border-bottom:1px solid #eee}
+.check input{width:auto;-webkit-appearance:auto;appearance:auto}.exercise input[type="checkbox"]{width:22px;height:22px;-webkit-appearance:auto;appearance:auto}button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}.done{text-decoration:line-through;color:#98a2b3}
+.exercise{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;padding:9px 0;border-bottom:1px solid #eee}
+.exercise small{display:block;color:var(--muted)}
+.badge{padding:5px 9px;border-radius:99px;background:#eef2ff;color:#3730a3;font-size:12px}
+.progress{height:10px;background:#e5e7eb;border-radius:20px;overflow:hidden}.bar{height:100%;background:var(--green);width:0}
+.meal{padding:10px 0;border-bottom:1px solid #eee}.meal b{display:block}
+table{width:100%;border-collapse:collapse}th,td{padding:9px;border-bottom:1px solid #eee;text-align:left}
+@media(max-width:650px){.stats{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<header>
+  <div class="container">
+    <h1>🏋️ Pranay Bhagat's Gym & Fat-Loss Tracker</h1>
+    <p>Beginner plan • Morning training • 74 kg starting weight • 5'5"</p>
+  </div>
+</header>
+
+<main class="container">
+  <div class="card">
+    <div class="row" style="justify-content:space-between">
+      <div><h2 id="dayTitle">Today's Routine</h2><div class="muted" id="date"></div></div>
+      <select id="daySelect" onchange="renderDay()"></select>
+    </div>
+    <br>
+    <div class="stats">
+      <div class="stat"><span class="muted">Weight</span><b><span id="weightStat">74</span> kg</b></div>
+      <div class="stat"><span class="muted">Waist</span><b>32"</b></div>
+      <div class="stat"><span class="muted">Goal</span><b>68–70</b><span class="muted">kg</span></div>
+      <div class="stat"><span class="muted">Progress</span><b id="pct">0%</b></div>
+    </div>
+  </div>
+
+  <div class="grid" style="margin-top:16px">
+    <section class="card">
+      <h2>🔥 Today's Workout</h2>
+      <div id="workout"></div>
+      <br>
+      <div class="muted">Workout completion</div>
+      <div class="progress"><div class="bar" id="workoutBar"></div></div>
+    </section>
+
+    <section class="card">
+      <h2>🍳 Today's Meals</h2>
+      <div id="meals"></div>
+    </section>
+  </div>
+
+  <div class="grid" style="margin-top:16px">
+    <section class="card">
+      <h2>📋 Daily Check-in</h2>
+      <label>Morning weight (kg)</label>
+      <input id="weight" type="number" step="0.1" placeholder="e.g. 73.8">
+      <label>Steps</label>
+      <input id="steps" type="number" placeholder="e.g. 8000">
+      <label>Water (litres)</label>
+      <input id="water" type="number" step="0.1" placeholder="e.g. 2.5">
+      <label>Sleep (hours)</label>
+      <input id="sleep" type="number" step="0.1" placeholder="e.g. 7.5">
+      <label>Notes</label>
+      <textarea id="notes" rows="3" placeholder="Energy, soreness, food, anything important..."></textarea>
+      <br><br>
+      <div class="row">
+        <button onclick="saveCheckin()">Save today's check-in</button>
+        <button class="secondary" onclick="clearToday()">Clear today</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>📅 Weekly Review</h2>
+      <div id="history"></div>
+    </section>
+  </div>
+
+
+  <section class="card" style="margin-top:16px">
+    <h2>🥗 Food & Nutrient Guide</h2>
+    <p class="muted">Approximate nutrition per common serving. Values vary by brand, recipe, cooking method and portion size.</p>
+    <div style="overflow-x:auto">
+      <table>
+        <thead>
+          <tr><th>Food</th><th>Serving</th><th>Calories</th><th>Protein</th><th>Carbs</th><th>Fat</th><th>Fiber</th></tr>
+        </thead>
+        <tbody id="foodTable"></tbody>
+      </table>
+    </div>
+    <br>
+    <div class="grid">
+      <div>
+        <h3>🎯 Daily targets</h3>
+        <div class="check"><span>Protein</span><b>110–125 g</b></div>
+        <div class="check"><span>Water</span><b>~2–3 L</b></div>
+        <div class="check"><span>Fruit & vegetables</span><b>Daily</b></div>
+      </div>
+      <div>
+        <h3>📌 How to use it</h3>
+        <p class="muted">Use the table to choose protein-rich foods and control portions. These numbers are estimates, not laboratory measurements.</p>
+        <p class="muted"><b>Example:</b> 3 eggs provide roughly 18–19 g protein; 150 g cooked chicken provides roughly 45 g protein.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" style="margin-top:16px">
+    <h2>🎯 Your Rules</h2>
+    <div class="grid">
+      <div><b>Strength</b><p class="muted">3 days/week. Start light and prioritize technique.</p></div>
+      <div><b>Cardio</b><p class="muted">2–3 sessions/week. Build gradually toward 150+ min/week.</p></div>
+      <div><b>Protein</b><p class="muted">Target approximately 110–125 g/day.</p></div>
+      <div><b>Sleep</b><p class="muted">Aim for 7–9 hours.</p></div>
+    </div>
+  </section>
+</main>
+
+<script>
+const plan={
+Monday:{type:"Full Body A + Cardio", exercises:[
+["Warm-up","10 min","Treadmill + dynamic movements"],
+["Leg press","3 × 10–12","90 sec rest"],["Chest press","3 × 10–12","90 sec"],
+["Lat pulldown","3 × 10–12","90 sec"],["Seated cable row","2 × 10–12","60–90 sec"],
+["Leg curl","2 × 12","60–90 sec"],["Shoulder press","2 × 10","60–90 sec"],
+["Plank","2 × 20–30 sec","45 sec"],["Cardio","15 min","Incline treadmill, moderate pace"]]},
+Tuesday:{type:"Cardio + Walking",exercises:[["Warm-up","5 min","Easy walk"],["Cardio","30 min","Treadmill/cycle/elliptical, moderate"],["Daily movement","7,000–9,000 steps","Spread across the day"]]},
+Wednesday:{type:"Full Body B + Cardio",exercises:[
+["Warm-up","10 min","Treadmill + dynamic movements"],["Goblet squat","3 × 10","Controlled"],["DB Romanian deadlift","2 × 10","Light weight"],
+["Machine chest press","3 × 10–12","90 sec"],["Lat pulldown","3 × 10–12","90 sec"],
+["Cable row","2 × 10–12","60–90 sec"],["Lateral raise","2 × 12–15","60 sec"],
+["Dead bug","2 × 8–10/side","Controlled"],["Cardio","15–20 min","Incline walking"]]},
+Thursday:{type:"Recovery",exercises:[["Walking","30–45 min","Comfortable pace"],["Mobility","5–10 min","Gentle movement"]]},
+Friday:{type:"Full Body A + Cardio",exercises:[
+["Warm-up","10 min","Treadmill + dynamic movements"],["Leg press","3 × 10–12","90 sec"],
+["Chest press","3 × 10–12","90 sec"],["Lat pulldown","3 × 10–12","90 sec"],
+["Seated cable row","2 × 10–12","60–90 sec"],["Leg curl","2 × 12","60–90 sec"],
+["Shoulder press","2 × 10","60–90 sec"],["Plank","2 × 20–30 sec","45 sec"],
+["Cardio","15 min","Incline treadmill"]]},
+Saturday:{type:"Cardio",exercises:[["Warm-up","5 min","Easy pace"],["Cardio","35–45 min","Cycle/treadmill/elliptical"],["Walking","Optional","Easy movement"]]},
+Sunday:{type:"Rest",exercises:[["Recovery","—","Normal daily movement; no hard workout"]]}
+};
+
+const meals={
+Monday:[["Pre-gym","1 banana if hungry"],["Breakfast","3 eggs + 2 roti + vegetables + curd"],["Lunch","1–1.5 cups cooked rice + dal + 120–150 g chicken + vegetables + salad"],["Snack","Apple + small handful roasted chana"],["Dinner","2 roti + 120–150 g chicken/fish + vegetables + salad"]],
+Tuesday:[["Pre-gym","Banana if hungry; optional unsweetened tea/coffee"],["Breakfast","50–60 g oats + 250 mL milk + 2 eggs + fruit"],["Lunch","Rice + dal + ~150 g fish + vegetables + salad"],["Snack","Curd + fruit"],["Dinner","2 roti + 3 eggs + vegetables + salad"]],
+Wednesday:[["Pre-gym","1 banana"],["Breakfast","50–60 g chiura + 3 eggs + curd + fruit"],["Lunch","Rice + dal + ~150 g chicken + vegetables + salad"],["Snack","Roasted chana + tea/coffee"],["Dinner","2 roti + ~150 g fish + vegetables + curd"]],
+Thursday:[["Breakfast","3-egg vegetable omelette + 2 roti + fruit"],["Lunch","Rice + dal + chicken + vegetables + salad"],["Snack","Fruit + small handful nuts"],["Dinner","2 roti + dal + 2 eggs + vegetables"]],
+Friday:[["Pre-gym","1 banana"],["Breakfast","3 eggs + oats with milk + fruit"],["Lunch","Rice + dal + ~150 g chicken + vegetables + salad"],["Snack","Curd + fruit"],["Dinner","2 roti + fish/chicken + vegetables"]],
+Saturday:[["Pre-cardio","Banana if hungry"],["Breakfast","3 eggs + 2 roti + vegetables + curd"],["Lunch","Rice + dal + fish/chicken + vegetables + salad"],["Snack","Roasted chana + fruit"],["Dinner","2 roti + ~120–150 g chicken + vegetables + salad"]],
+Sunday:[["Breakfast","3 eggs + 2 roti + curd + fruit"],["Lunch","Dal + rice + chicken/mutton + vegetables (controlled portions)"],["Snack","Fruit or curd"],["Dinner","2 roti + dal/eggs/chicken + plenty of vegetables"]]
+};
+
+let today=new Intl.DateTimeFormat('en-US',{weekday:'long'}).format(new Date());
+const keys=Object.keys(plan);
+const sel=document.getElementById('daySelect');
+keys.forEach(d=>{let o=document.createElement('option');o.value=d;o.textContent=d;sel.appendChild(o)});
+sel.value=plan[today]?today:"Monday";
+document.getElementById('date').textContent=new Intl.DateTimeFormat(undefined,{year:'numeric',month:'long',day:'numeric'}).format(new Date());
+
+function localDateKey(d=new Date()){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function safeGet(k){try{return localStorage.getItem(k)}catch(e){return null}}
+function safeSet(k,v){try{localStorage.setItem(k,v);return true}catch(e){return false}}
+function safeRemove(k){try{localStorage.removeItem(k)}catch(e){}}
+function storageKey(){return 'gymtracker_'+localDateKey()+'_'+sel.value}
+function renderDay(){
+ const d=sel.value, p=plan[d];
+ document.getElementById('dayTitle').textContent=d+" — "+p.type;
+ const saved=JSON.parse(safeGet(storageKey())||'{}');
+ document.getElementById('workout').innerHTML=p.exercises.map((x,i)=>`
+ <div class="exercise"><div><b class="${saved['ex'+i]?'done':''}">${x[0]}</b><small>${x[1]} • ${x[2]}</small></div>
+ <input type="checkbox" ${saved['ex'+i]?'checked':''} onchange="toggleEx(${i},this.checked)"></div>`).join('');
+ document.getElementById('meals').innerHTML=(meals[d]||[]).map(x=>`<div class="meal"><b>${x[0]}</b><span class="muted">${x[1]}</span></div>`).join('');
+ updateProgress();
+ loadCheckin();
+}
+function toggleEx(i,v){let s=JSON.parse(safeGet(storageKey())||'{}');s['ex'+i]=v;safeSet(storageKey(),JSON.stringify(s)); renderDay()}
+function updateProgress(){
+ let s=JSON.parse(safeGet(storageKey())||'{}'), n=plan[sel.value].exercises.length;
+ let done=plan[sel.value].exercises.filter((_,i)=>s['ex'+i]).length, pct=Math.round(done/n*100);
+ document.getElementById('pct').textContent=pct+'%';document.getElementById('workoutBar').style.width=pct+'%';
+}
+function loadCheckin(){
+ let d=JSON.parse(safeGet('checkin_'+localDateKey())||'{}');
+ ['weight','steps','water','sleep','notes'].forEach(k=>document.getElementById(k).value=d[k]??'');
+}
+function saveCheckin(){
+ let d={};['weight','steps','water','sleep','notes'].forEach(k=>d[k]=document.getElementById(k).value);
+ safeSet('checkin_'+localDateKey(),JSON.stringify(d));
+ if(d.weight)document.getElementById('weightStat').textContent=d.weight;
+ renderHistory();showSavedMessage('Saved for today.');
+}
+function clearToday(){
+ safeRemove('checkin_'+localDateKey());loadCheckin();renderHistory();
+}
+function showSavedMessage(msg){
+ let el=document.getElementById('savedMessage');
+ if(!el){el=document.createElement('div');el.id='savedMessage';el.className='muted';el.style.marginTop='8px';document.querySelector('#notes').parentElement.appendChild(el);}
+ el.textContent=msg; window.setTimeout(()=>{el.textContent='';},2200);
+}
+
+function renderHistory(){
+ let rows=[];for(let i=6;i>=0;i--){let dt=new Date();dt.setHours(12,0,0,0);dt.setDate(dt.getDate()-i);let k='checkin_'+localDateKey(dt),d=JSON.parse(safeGet(k)||'{}');rows.push(`<tr><td>${new Intl.DateTimeFormat(undefined,{weekday:'short',day:'numeric'}).format(dt)}</td><td>${d.weight||'—'}</td><td>${d.steps||'—'}</td><td>${d.sleep||'—'}</td></tr>`)}
+ document.getElementById('history').innerHTML='<table><tr><th>Day</th><th>kg</th><th>Steps</th><th>Sleep</th></tr>'+rows.join('')+'</table>';
+}
+
+const foodData=[
+["Egg, whole","1 large","72","6.3 g","0.4 g","4.8 g","0 g"],
+["Chicken breast, cooked","100 g","165","31 g","0 g","3.6 g","0 g"],
+["Fish, cooked","100 g","120–200","22–26 g","0 g","3–10 g","0 g"],
+["Dal, cooked","1 cup","~230","~18 g","~40 g","~1 g","~15 g"],
+["Rice, cooked","1 cup","~205","~4 g","~45 g","~0.4 g","~0.6 g"],
+["Roti, medium","1 piece","~100–120","~3 g","~20 g","~1–2 g","~2–3 g"],
+["Chiura","50 g dry","~180","~3–4 g","~40 g","~0.5 g","~1–2 g"],
+["Oats, dry","50 g","~190","~6–7 g","~32 g","~3.5 g","~5 g"],
+["Milk","250 mL","~120–160","~8 g","~12 g","~4–8 g","0 g"],
+["Curd/yogurt, plain","150 g","~90–120","~5–7 g","~7–9 g","~3–5 g","0 g"],
+["Banana","1 medium","~105","~1.3 g","~27 g","~0.4 g","~3 g"],
+["Apple","1 medium","~95","~0.5 g","~25 g","~0.3 g","~4 g"],
+["Guava","1 medium","~70","~2–3 g","~14 g","~1 g","~5 g"],
+["Roasted chana","30 g","~110","~6 g","~18 g","~2 g","~5 g"],
+["Peanuts","30 g","~170","~7 g","~5 g","~14 g","~2–3 g"],
+["Paneer","100 g","~250–300","~18–20 g","~3–5 g","~20–25 g","0 g"],
+["Soybeans, cooked","100 g","~170","~17 g","~10 g","~9 g","~6 g"],
+["Potato, boiled","100 g","~85","~2 g","~20 g","~0.1 g","~2 g"],
+["Mixed vegetables, cooked","1 cup","~80–120","~3–5 g","~15–20 g","~1–3 g","~4–7 g"]
+];
+document.getElementById('foodTable').innerHTML=foodData.map(r=>'<tr>'+r.map(c=>'<td>'+c+'</td>').join('')+'</tr>').join('');
+
+renderDay();renderHistory();
+</script>
+</body>
+</html>
